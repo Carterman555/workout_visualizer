@@ -115,3 +115,29 @@ def replace_exercise_names(old_name, new_name):
 
     df.to_csv(CSV_PATH, index=False)
 
+
+def one_rep_max_calc(weight, reps):
+    return weight * (1 + 0.03 * reps)
+
+def get_1RMs(exercise):
+
+    df = get_df()
+
+    filter = df['exercise'] == exercise
+
+    dates = list(df[filter]['date'])
+
+    weights = list(df[filter]['weight'])
+    rep_amounts = list(df[filter]['reps'])
+
+    if len(dates) != len(weights) or len(weights) != len(rep_amounts):
+        print(f"Error: length of dates, weights, and/or reps are not equal.\ndate length: {len(dates)}, weights len: {len(weights)}, reps length: {len(rep_amounts)}")
+        return None, None
+
+    maxes = []
+    for weight, reps in zip(weights, rep_amounts):
+        max = one_rep_max_calc(weight, reps)
+        maxes.append(max)
+
+    return dates, maxes
+

@@ -5,6 +5,7 @@ from datetime import datetime
 from gui import GUI
 from helper import *
 from csv_helper import *
+from graph_helper import *
 
 
 def main():
@@ -41,6 +42,10 @@ def main():
     replace_parser.add_argument('old_name', help='current exercise name to replace')
     replace_parser.add_argument('new_name', help='new exercise name to use')
 
+    # graph
+    graph_parser = subparsers.add_parser('graph', help='Show a graph to visualize progress over time')
+    graph_parser.add_argument('exercise', help='name of exercise to graph')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -65,6 +70,9 @@ def main():
         gui = GUI()
     elif args.command == 'replace':
         replace_exercise_names(args.old_name, args.new_name)
+    elif args.command == 'graph':
+        dates, maxes = get_1RMs(args.exercise)
+        open_line_plot(f"{args.exercise} 1RM", "1RM", dates, maxes)
 
 
 
