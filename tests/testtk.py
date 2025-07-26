@@ -2,42 +2,42 @@ from tkinter import *
 from tkinter import ttk
 import re
 
-def calculate(*args):
-    try:
-        value = float(feet.get())
-        meters.set(int(0.3048 * value * 10000.0 + 0.5)/10000.0)
-    except ValueError:
-        pass
+def check_zip(newval, op):
+    errmsg.set('')
+    valid = valid = re.match(r'^[0-9]{5}(-[0-9]{4})?$', newval) is not None
+    btn.state(['!disabled'] if valid else ['disabled'])
+    if op=='key':
+        ok_so_far = re.match(r'^[0-9\-]*$', newval) is not None and len(newval) <= 10
+        if not ok_so_far:
+            errmsg.set(formatmsg)
+        return ok_so_far
+    elif op=='focusout':
+        if not valid:
+            errmsg.set(formatmsg)
+    return valid
 
-def check_num(newval):
-    return re.match('^[0-9]*$', newval) is not None and len(newval) <= 5
 
-root = Tk()
-root.title("Feet to Meters")
+if __name__ == "__main__":
 
-mainframe = ttk.Frame(root, padding="3 3 12 12")
-mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-root.columnconfigure(0, weight=1)
-root.rowconfigure(0, weight=1)
+    root = Tk()
 
-feet = StringVar()
-check_num_wrapper = (root.register(check_num), '%P')
-feet_entry = ttk.Entry(mainframe, width=7, textvariable=feet, validate='key', validatecommand=check_num_wrapper)
-feet_entry.grid(column=2, row=1, sticky=(W, E))
+    errmsg = StringVar()
+    formatmsg = "Zip should be ##### or #####-####"
 
-meters = StringVar()
-ttk.Label(mainframe, textvariable=meters).grid(column=2, row=2, sticky=(W, E))
+    check_zip_wrapper = (root.register(check_zip), '%P', '%V')
 
-ttk.Button(mainframe, text="Calculate", command=calculate).grid(column=3, row=3, sticky=W)
+    zip = StringVar()
+    f = ttk.Frame(root)
+    f.grid(column=0, row=0)
+    ttk.Label(f, text='Name:').grid(column=0, row=0, padx=5, pady=5)
+    ttk.Entry(f).grid(column=1, row=0, padx=5, pady=5)
+    ttk.Label(f, text='Zip:').grid(column=0, row=1, padx=5, pady=5)
+    e = ttk.Entry(f, textvariable=zip, validate='all', validatecommand=check_zip_wrapper)
+    e.grid(column=1, row=1, padx=5, pady=5)
+    btn = ttk.Button(f, text="Process")
+    btn.grid(column=2, row=1, padx=5, pady=5)
+    btn.state(['disabled'])
+    msg = ttk.Label(f, font='TkSmallCaptionFont', foreground='red', textvariable=errmsg)
+    msg.grid(column=1, row=2, padx=5, pady=5, sticky='w')
 
-ttk.Label(mainframe, text="feet").grid(column=3, row=1, sticky=W)
-ttk.Label(mainframe, text="is equivalent to").grid(column=1, row=2, sticky=E)
-ttk.Label(mainframe, text="meters").grid(column=3, row=2, sticky=W)
-
-for child in mainframe.winfo_children(): 
-    child.grid_configure(padx=5, pady=5)
-
-feet_entry.focus()
-root.bind("<Return>", calculate)
-
-root.mainloop()
+    root.mainloop()
