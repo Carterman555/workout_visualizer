@@ -12,7 +12,7 @@ def main():
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
     
     # add
-    add_parser = subparsers.add_parser('add', help='Add a word to the file')
+    add_parser = subparsers.add_parser('add', help='Add an exercise entry which represents one set')
     add_parser.add_argument('date', help='date of exercise')
     add_parser.add_argument('exercise', help='exercise name')
     add_parser.add_argument('set_num', type=int, help='order of set')
@@ -27,11 +27,19 @@ def main():
     open_parser.add_argument('-n', '--nano', action='store_true', help='edit data using nano')
     open_parser.add_argument('-s', '--system', default=None, choices=['windows', 'mac', 'linux'], help='operating system')
 
+    # print
+    print_parser = subparsers.add_parser('print', help='Prints workout data')
+
     # process
     process_parser = subparsers.add_parser('process', help='Removes invalid entries and formats dates')
 
-    # print
-    print_parser = subparsers.add_parser('print', help='Prints workout data')
+    # gui
+    gui_parser = subparsers.add_parser('gui', help='Open gui for entering workout sets')
+
+    # replace
+    replace_parser = subparsers.add_parser('replace', help='Replace all instances of an exercise name with a new one')
+    replace_parser.add_argument('old_name', help='current exercise name to replace')
+    replace_parser.add_argument('new_name', help='new exercise name to use')
 
     args = parser.parse_args()
 
@@ -49,10 +57,14 @@ def main():
             nano_edit_csv()
         else:
             open_csv()
-    elif args.command == 'process':
-        pass
     elif args.command == 'print':
         print_csv()
+    elif args.command == 'process':
+        process_csv()
+    elif args.command == 'gui':
+        gui = GUI()
+    elif args.command == 'replace':
+        replace_exercise_names(args.old_name, args.new_name)
 
 
 

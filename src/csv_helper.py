@@ -4,10 +4,24 @@ import os
 import platform
 import subprocess
 
+from helper import format_date
+
 CSV_PATH = "data/processed/exercises.csv"
 
 def csv_exists():
     return os.path.exists(CSV_PATH)
+
+
+def get_df():
+    if csv_exists():
+        try:
+            df = pd.read_csv(CSV_PATH)
+        except Exception as e:
+            print(f"Error trying to read csv {e}. Edit csv to correct format.")
+    else:
+        df = create_new_csv()
+
+    return df
 
 
 def create_new_csv():
@@ -27,10 +41,7 @@ def create_new_csv():
 
 def add_csv_entry(date, exercise, set_num, weight, reps):
 
-    if csv_exists():
-        df = pd.read_csv(CSV_PATH)
-    else:
-        df = create_new_csv()
+    df = get_df()
 
     new_entry = pd.DataFrame({
         'date': [date],
@@ -41,9 +52,9 @@ def add_csv_entry(date, exercise, set_num, weight, reps):
     })
 
     new_df = pd.concat([df, new_entry], ignore_index=True)
-    new_df = new_df.drop_duplicates()
-
     new_df.to_csv(CSV_PATH, index=False)
+
+    remove_invalid_entries()
 
 
 def add_strong_csv_entries(file_path):
@@ -67,25 +78,40 @@ def open_csv_notepad(system=None):
 
 
 def remove_invalid_entries():
-    if csv_exists():
-        df = pd.read_csv(CSV_PATH)
-    else:
-        df = create_new_csv()
+    df = get_df()
 
-    new_df = new_df.drop_duplicates()
+    new_df = df.drop_duplicates().dropna()
+
+    new_df.to_csv(CSV_PATH, index=False)
+
 
 def format_dates():
-    pass
+    df = get_df()
+
+    for num, data in df.iterrows():
+        date = data['date']
+        df.loc[num, 'date'] = format_date(date)
+
+    df.to_csv(CSV_PATH, index=False)
+
 
 def process_csv():
     remove_invalid_entries()
     format_dates()
+    remove_invalid_entries() # to remove duplicates after formating dates
 
 
 def print_csv():
-    if csv_exists():
-        df = pd.read_csv(CSV_PATH)
-    else:
-        df = create_new_csv()
+    print(get_df())
 
-    print(df);
+
+def replace_exercise_names(old_name, new_name):
+    df = get_df()
+    
+    for num, data in df.iterrows():
+        name = data['exercise']
+        if name == old_name:
+            df.loc[num, 'exercise'] = new_name
+
+    df.to_csv(CSV_PATH, index=False)
+
