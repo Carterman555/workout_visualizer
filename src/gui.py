@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter import font
 import re
 
 from csv_helper import *
@@ -11,85 +12,72 @@ class GUI:
         self.root.title = "WorkoutVisualizer"
 
         self.mainframe = ttk.Frame(self.root, padding="20")
-        self.mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-        self.root.columnconfigure(0, weight=1)
-        self.root.rowconfigure(0, weight=1)
+        self.mainframe.grid(column=1, row=1, sticky=(N, W, E, S))
 
-        ttk.Label(self.mainframe, text="Workout Visualizer").grid(column=0, row=0, columnspan=2, sticky=(N))
+        self.root.columnconfigure(1, weight=1)
+        self.root.rowconfigure(1, weight=1)
 
-        # entry labels
-        ttk.Label(self.mainframe, text="Date").grid(column=0, row=1, sticky=(E))
-        ttk.Label(self.mainframe, text="Exercise").grid(column=0, row=3, sticky=(E))
-        ttk.Label(self.mainframe, text="Weight").grid(column=0, row=5, sticky=(E))
-        ttk.Label(self.mainframe, text="Reps").grid(column=0, row=7, sticky=(E))
 
-        # entries
+        # styles and fonts
+        s = ttk.Style()
+        s.configure('Debug.TFrame', background='gray')
+
+        medium_font = font.Font(family="Helvetica", size=14)
+        small_font = font.Font(family="Helvetica", size=11)
+
+        # date
+        ttk.Label(self.mainframe, text="Date", font=medium_font).grid(column=1, row=1, pady=(25, 0), sticky=(E))
+        ttk.Label(self.mainframe, text="##/##/####", font=small_font).grid(column=2, row=2, padx=15, sticky=(W))
+
         self.date = StringVar()
-        self.exercise = StringVar()
-        self.weight = StringVar()
-        self.reps = StringVar()
-
         self.date.trace_add("write", self.check_add_enabled)
-        self.exercise.trace_add("write", self.check_add_enabled)
-        self.weight.trace_add("write", self.check_add_enabled)
-        self.reps.trace_add("write", self.check_add_enabled)
-        
-        check_date_wrapper = (self.root.register(self.check_date_entry), '%P', '%V')
-        date_entry = ttk.Entry(self.mainframe, width=15, textvariable=self.date, validate='all', validatecommand=check_date_wrapper)
 
-        exercise_entry = ttk.Entry(self.mainframe, width=15, textvariable=self.exercise)
+        date_entry = ttk.Entry(self.mainframe, width=15, font=medium_font, textvariable=self.date)
 
-        check_num_wrapper = (self.root.register(self.check_num_entry), '%P')
-        weight_entry = ttk.Entry(self.mainframe, width=15, textvariable=self.weight, validate='key', validatecommand=check_num_wrapper)
-        reps_entry = ttk.Entry(self.mainframe, width=15, textvariable=self.reps, validate='key', validatecommand=check_num_wrapper)
+        date_entry.grid(column=2, row=1, padx=15, pady=(25, 0), sticky=(W))
 
-        date_entry.grid(column=1, row=1, sticky=(E))
-        exercise_entry.grid(column=1, row=3, sticky=(E))
-        weight_entry.grid(column=1, row=5, sticky=(E))
-        reps_entry.grid(column=1, row=7, sticky=(E))
-
-        # error messages
-        self.error_message = StringVar()
-        msg = ttk.Label(self.mainframe, font='TkSmallCaptionFont', foreground='red', textvariable=self.error_message)
-        msg.grid(column=0, row=2, columnspan=2, sticky='e')
-
-        # buttons
+        # add button
         self.add_button = ttk.Button(self.mainframe, text='Add', command=self.add_entry)
         self.add_button.state(['disabled'])
 
-        self.add_button.grid(column=0, row=9, columnspan=2)
+        self.add_button.grid(column=3, row=1, padx=50, pady=(25, 0), sticky=(E))
 
-        # padding
-        self.mainframe.columnconfigure(1, pad=15)
-        self.mainframe.rowconfigure(0, pad=25)
+        # --- Exercises Grid ---
+        gridframe = ttk.Frame(self.mainframe, padding="20")
+        gridframe.grid(column=1, row=3, columnspan=3, pady=(25, 0), sticky=(N, W, E, S))
 
-        for x in range(1, 9, 2):
-            self.mainframe.rowconfigure(x, pad=15)
+        ttk.Label(gridframe, text="Exercise", font=medium_font).grid(column=1, row=1, padx=(0, 10), pady=10, sticky=(W))
 
-        for x in range(2, 9, 2):
-            self.mainframe.rowconfigure(x, pad=5)
+        entries = []
+        for row_value in range(10):
 
-        self.mainframe.rowconfigure(9, pad=25)
+            top_row = (row_value*2)+2
+            bottom_row = (row_value*2)+3
+
+            self.exercise = StringVar()
+            ttk.Entry(gridframe, width=25, font=medium_font, textvariable=self.exercise).grid(column=1, row=top_row, rowspan=2, pady=(0, 20), sticky=(W))
+
+            ttk.Label(gridframe, text="Weight", font=small_font).grid(column=2, row=top_row, padx=(20, 0), sticky=(E))
+            ttk.Label(gridframe, text="Reps", font=small_font).grid(column=2, row=bottom_row, pady=(0, 20), sticky=(E))
+
+            for set_num in range(1, 6):
+
+                column = set_num + 2
+
+                ttk.Label(gridframe, text=f"Set {set_num}", font=small_font).grid(column=column, row=1, padx=10, pady=10)
+                ttk.Entry(gridframe, width=10, font=small_font).grid(column=column, row=top_row, padx=10)
+                ttk.Entry(gridframe, width=10, font=small_font).grid(column=column, row=bottom_row, padx=10, pady=(0, 20))
+
+
+        # self.exercise = StringVar()
+        # self.weight = StringVar()
+        # self.reps = StringVar()
+
+        # check_num_wrapper = (self.root.register(self.check_num_entry), '%P')
+        # weight_entry = ttk.Entry(self.mainframe, width=15, textvariable=self.weight, validate='key', validatecommand=check_num_wrapper)
+        # reps_entry = ttk.Entry(self.mainframe, width=15, textvariable=self.reps, validate='key', validatecommand=check_num_wrapper)
 
         self.root.mainloop()
-
-
-    def check_date_entry(self, newval, op):
-        self.error_message.set('')
-        valid = re.match(r'^\d{1,2}/\d{1,2}/\d{4}$', newval) is not None
-
-        error = "Date should be ##/##/####"
-
-        if op=='key':
-            ok_so_far = re.match(r'^[0-9/]+$', newval) is not None and len(newval) <= 10
-            if not ok_so_far:
-                self.error_message.set(error)
-            return ok_so_far
-        elif op=='focusout':
-            if not valid:
-                self.error_message.set(error)
-
-        return valid
 
 
     def check_num_entry(self, newval):
@@ -98,11 +86,7 @@ class GUI:
 
     def check_add_enabled(self, *args):
         date_valid = re.match(r'^\d{1,2}/\d{1,2}/\d{4}$', self.date.get()) is not None
-        exercise_valid = len(self.exercise.get()) > 0
-        weight_valid = len(self.weight.get()) > 0
-        reps_valid = len(self.reps.get()) > 0
-
-        valid = date_valid and exercise_valid and weight_valid and reps_valid
+        valid = date_valid
 
         self.add_button.state(['!disabled'] if valid else ['disabled'])
 

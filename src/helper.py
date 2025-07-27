@@ -3,16 +3,17 @@ from datetime import datetime
 def format_date(date_str):
     try:
         date_formats = [
-            "%Y-%m-%d",      # 2024-01-15
-            "%m/%d/%Y",      # 01/15/2024
-            "%d/%m/%Y",      # 15/01/2024
-            "%m-%d-%Y",      # 01-15-2024
-            "%d-%m-%Y",      # 15-01-2024
-            "%Y/%m/%d",      # 2024/01/15
-            "%B %d, %Y",     # January 15, 2024
-            "%b %d, %Y",     # Jan 15, 2024
-            "%d %B %Y",      # 15 January 2024
-            "%d %b %Y",      # 15 Jan 2024
+            "%Y-%m-%d",             # 2024-01-15
+            "%m/%d/%Y",             # 01/15/2024
+            "%d/%m/%Y",             # 15/01/2024
+            "%m-%d-%Y",             # 01-15-2024
+            "%d-%m-%Y",             # 15-01-2024
+            "%Y/%m/%d",             # 2024/01/15
+            "%B %d, %Y",            # January 15, 2024
+            "%b %d, %Y",            # Jan 15, 2024
+            "%d %B %Y",             # 15 January 2024
+            "%d %b %Y",             # 15 Jan 2024
+            "%Y-%m-%d %H:%M:%S",    # 2025-07-23 14:06:17 (used by strong)
         ]
 
         parsed_date = None
@@ -28,7 +29,7 @@ def format_date(date_str):
             print("                  'January 15, 2024', 'Jan 15, 2024', '15 January 2024', '15 Jan 2024'")
             return
 
-        formatted_date = parsed_date.strftime("%m/%d/%Y")
+        formatted_date = parsed_date.strftime("%Y-%m-%d")
         return formatted_date
 
     except Exception as e:

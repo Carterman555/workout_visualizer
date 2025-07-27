@@ -46,6 +46,10 @@ def main():
     graph_parser = subparsers.add_parser('graph', help='Show a graph to visualize progress over time')
     graph_parser.add_argument('exercise', help='name of exercise to graph')
 
+    # import strong data
+    strong_parser = subparsers.add_parser('strong', help='Import data from Strong app')
+    strong_parser.add_argument('path', help='path to strong export')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -73,6 +77,8 @@ def main():
     elif args.command == 'graph':
         dates, maxes = get_1RMs(args.exercise)
         open_line_plot(f"{args.exercise} 1RM", "1RM", dates, maxes)
+    elif args.command == 'strong':
+        add_strong_csv_entries(args.path)
 
 
 

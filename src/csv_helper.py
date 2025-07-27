@@ -27,11 +27,11 @@ def get_df():
 def create_new_csv():
 
     df = pd.DataFrame({
-        'date': [],
-        'exercise': [],
-        'set num': [],
-        'weight': [],
-        'reps': []
+        'Date': [],
+        'Exercise': [],
+        'Set Order': [],
+        'Weight': [],
+        'Reps': []
     })
 
     df.to_csv(CSV_PATH, index=False)
@@ -39,34 +39,22 @@ def create_new_csv():
     return df
 
 
-def add_csv_entry(date, exercise, set_num, weight, reps):
+def add_csv_entry(date, exercise, set_order, weight, reps):
 
     df = get_df()
 
     new_entry = pd.DataFrame({
-        'date': [date],
-        'exercise': [exercise],
-        'set num': [set_num],
-        'weight': [weight],
-        'reps': [reps]
+        'Date': [date],
+        'Exercise': [exercise],
+        'Set Order': [set_order],
+        'Weight': [weight],
+        'Reps': [reps]
     })
 
     new_df = pd.concat([df, new_entry], ignore_index=True)
     new_df.to_csv(CSV_PATH, index=False)
 
     remove_invalid_entries()
-
-
-def add_strong_csv_entries(file_path):
-
-    if csv_exists():
-        processed_df = pd.read_csv(CSV_PATH)
-    else:
-        processed_df = create_new_csv()
-
-    strong_df = pd.read_csv(file_path)
-
-    # TODO - finish
 
 
 def nano_edit_csv():
@@ -89,8 +77,8 @@ def format_dates():
     df = get_df()
 
     for num, data in df.iterrows():
-        date = data['date']
-        df.loc[num, 'date'] = format_date(date)
+        date = data['Date']
+        df.loc[num, 'Date'] = format_date(date)
 
     df.to_csv(CSV_PATH, index=False)
 
@@ -109,9 +97,9 @@ def replace_exercise_names(old_name, new_name):
     df = get_df()
     
     for num, data in df.iterrows():
-        name = data['exercise']
+        name = data['Wxercise']
         if name == old_name:
-            df.loc[num, 'exercise'] = new_name
+            df.loc[num, 'Exercise'] = new_name
 
     df.to_csv(CSV_PATH, index=False)
 
@@ -123,15 +111,16 @@ def get_1RMs(exercise):
 
     df = get_df()
 
-    filter = df['exercise'] == exercise
+    filtered_df = df[df['Exercise'] == exercise]
 
-    dates = list(df[filter]['date'])
+    filtered_df = filtered_df.drop_duplicates(subset='Date', keep='first')
 
-    weights = list(df[filter]['weight'])
-    rep_amounts = list(df[filter]['reps'])
+    dates = list(filtered_df['Date'])
+    weights = list(filtered_df['Weight'])
+    rep_amounts = list(filtered_df['Reps'])
 
     if len(dates) != len(weights) or len(weights) != len(rep_amounts):
-        print(f"Error: length of dates, weights, and/or reps are not equal.\ndate length: {len(dates)}, weights len: {len(weights)}, reps length: {len(rep_amounts)}")
+        print(f"Error: Mismatched lengths - \ndate: {len(dates)}, weights: {len(weights)}, reps: {len(rep_amounts)}")
         return None, None
 
     maxes = []
@@ -141,3 +130,33 @@ def get_1RMs(exercise):
 
     return dates, maxes
 
+
+def add_strong_csv_entries(file_path):
+
+    df = get_df()
+
+    strong_df = pd.read_csv(file_path)
+
+    filter = strong_df['Set Order'] != 'Rest Timer'
+
+    dates = list(strong_df[filter]['Date'])
+    dates = list(map(format_date, dates))
+    exercises = list(strong_df[filter]['Exercise Name'])
+    set_orders = list(strong_df[filter]['Set Order'])
+    weights = list(strong_df[filter]['Weight'])
+    rep_amounts = list(strong_df[filter]['Reps'])
+
+    if len(dates) != len(exercises) or len(exercises) != len(set_orders) or \
+        len(set_orders) != len(weights) or len(weights) != len(rep_amounts):
+        print(f"Error: Mismatched lengths - dates: {len(dates)}, exercises: {len(exercises)}, set_orders: {len(set_orders)}, weights: {len(weights)}, rep_amounts: {len(rep_amounts)}")
+
+    new_entries = pd.DataFrame({
+        'Date': dates,
+        'Exercise': exercises,
+        'Set Order': set_orders,
+        'Weight': weights,
+        'Reps': rep_amounts
+    })
+
+    new_df = pd.concat([df, new_entries], ignore_index=True)
+    new_df.to_csv(CSV_PATH, index=False)
