@@ -36,6 +36,7 @@ def main():
 
     # gui
     gui_parser = subparsers.add_parser('gui', help='Open gui for entering workout sets')
+    gui_parser.add_argument('-f', '--file', default=None, help="File name to write to")
 
     # replace
     replace_parser = subparsers.add_parser('replace', help='Replace all instances of an exercise name with a new one')
@@ -71,7 +72,7 @@ def main():
     elif args.command == 'process':
         process_csv()
     elif args.command == 'gui':
-        gui = GUI()
+        gui = GUI(args.file)
     elif args.command == 'replace':
         replace_exercise_names(args.old_name, args.new_name)
     elif args.command == 'graph':

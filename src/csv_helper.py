@@ -8,14 +8,14 @@ from helper import format_date
 
 CSV_PATH = "data/processed/exercises.csv"
 
-def csv_exists():
-    return os.path.exists(CSV_PATH)
+def csv_exists(path=CSV_PATH):
+    return os.path.exists(path)
 
 
-def get_df():
-    if csv_exists():
+def get_df(path=CSV_PATH):
+    if csv_exists(path):
         try:
-            df = pd.read_csv(CSV_PATH)
+            df = pd.read_csv(path)
         except Exception as e:
             print(f"Error trying to read csv {e}. Edit csv to correct format.")
     else:
@@ -39,9 +39,15 @@ def create_new_csv():
     return df
 
 
-def add_csv_entry(date, exercise, set_order, weight, reps):
+def add_csv_entry(date, exercise, set_order, weight, reps, file_name=None):
 
-    df = get_df()
+    if file_name == None:
+        file_path = CSV_PATH
+    else:
+        path, file = os.path.split(CSV_PATH)
+        file_path = os.path.join(path, file_name)
+
+    df = get_df(file_path)
 
     new_entry = pd.DataFrame({
         'Date': [date],
@@ -52,7 +58,7 @@ def add_csv_entry(date, exercise, set_order, weight, reps):
     })
 
     new_df = pd.concat([df, new_entry], ignore_index=True)
-    new_df.to_csv(CSV_PATH, index=False)
+    new_df.to_csv(file_path, index=False)
 
     remove_invalid_entries()
 
@@ -160,3 +166,9 @@ def add_strong_csv_entries(file_path):
 
     new_df = pd.concat([df, new_entries], ignore_index=True)
     new_df.to_csv(CSV_PATH, index=False)
+
+
+def get_exercise_names():
+    df = get_df()
+    return list(df['Exercise'])
+
