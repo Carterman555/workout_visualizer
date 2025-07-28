@@ -203,8 +203,8 @@ def add_strong_csv_entries(strong_file_path, export_file_name):
 def get_exercise_names():
     df = get_unified_df()
     if df is not None and 'Exercise' in df.columns:
-        return list(df['Exercise'])
-    return []
+        return set(df['Exercise'])
+    return {}
 
 
 def delete_csv_file(file_name):

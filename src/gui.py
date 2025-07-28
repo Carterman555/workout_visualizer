@@ -200,6 +200,7 @@ class GUI:
         self.trie = StringTrie()
 
         for key in get_exercise_names():
+            self.trie[key.lower()] = key
             self.trie[key] = key
 
         self.update_suggestions(exercise)
