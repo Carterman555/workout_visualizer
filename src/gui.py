@@ -171,7 +171,6 @@ class GUI:
                     self.file_name
                 )
 
-                # print(f"Added - Date: {self.date.get()}, Exercise: {entry["Exercise"].get()}, Weight: {entry["Weights"][i].get()}, Reps: {entry["RepAmounts"][i].get()}")
             
         self.clear_entries()
 
@@ -198,8 +197,6 @@ class GUI:
             self.suggestions_listbox.place(x=x, y=y, width=widget.winfo_width())
 
     def show_suggestions(self, exercise):
-        
-        self.try_place_suggestion_listbox()
         self.trie = StringTrie()
 
         for key in get_exercise_names():

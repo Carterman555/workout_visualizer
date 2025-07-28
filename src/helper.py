@@ -1,6 +1,10 @@
 from datetime import datetime
 
 def format_date(date_str):
+
+    if not isinstance(date_str, str):
+        return None
+
     try:
         date_formats = [
             "%Y-%m-%d",             # 2024-01-15
@@ -24,10 +28,10 @@ def format_date(date_str):
                 continue
 
         if parsed_date is None:
-            print(f"Error: Could not parse date '{date_str}'")
+            print(f"Warning: Could not parse date '{date_str}'")
             print("Supported formats: YYYY-MM-DD, MM/DD/YYYY, DD/MM/YYYY, MM-DD-YYYY, DD-MM-YYYY, YYYY/MM/DD")
             print("                  'January 15, 2024', 'Jan 15, 2024', '15 January 2024', '15 Jan 2024'")
-            return
+            return None
 
         formatted_date = parsed_date.strftime("%Y-%m-%d")
         return formatted_date

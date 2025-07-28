@@ -1,30 +1,55 @@
 import pandas as pd
-import numpy as np
 import os
-import platform
 import subprocess
+import traceback
 
 from helper import format_date
 
-CSV_PATH = "data/processed/exercises.csv"
+CSV_PATH = "data/processed"
 
-def csv_exists(path=CSV_PATH):
-    return os.path.exists(path)
+def csv_exists(file_name):
+    file_path = os.path.join(CSV_PATH, file_name)
+    return os.path.exists(file_path)
 
 
-def get_df(path=CSV_PATH):
-    if csv_exists(path):
+def any_csv_exists():
+    return len(os.listdir(CSV_PATH)) > 0
+
+
+def get_csv_df(file_name):
+    file_path = os.path.join(CSV_PATH, file_name)
+
+    if csv_exists(file_name):
         try:
-            df = pd.read_csv(path)
+            df = pd.read_csv(file_path)
         except Exception as e:
             print(f"Error trying to read csv {e}. Edit csv to correct format.")
     else:
-        df = create_new_csv()
+        df = create_new_csv(file_name)
+        print("Created new file")
 
     return df
 
 
-def create_new_csv():
+def get_all_dfs():
+    dfs = []
+    for file_name in os.listdir(CSV_PATH):
+        df = get_csv_df(file_name)
+        dfs.append(df)
+    return dfs
+
+
+def get_unified_df():
+
+    unified_df = pd.DataFrame()
+    dfs = get_all_dfs()
+    for df in dfs:
+        unified_df = pd.concat([unified_df, df], ignore_index=True)
+
+    return unified_df
+        
+
+def create_new_csv(file_name):
 
     df = pd.DataFrame({
         'Date': [],
@@ -34,20 +59,16 @@ def create_new_csv():
         'Reps': []
     })
 
-    df.to_csv(CSV_PATH, index=False)
+    file_path = os.path.join(CSV_PATH, file_name)
+    df.to_csv(file_path, index=False)
 
     return df
 
 
-def add_csv_entry(date, exercise, set_order, weight, reps, file_name=None):
+def add_csv_entry(file_name, date, exercise, set_order, weight, reps):
 
-    if file_name == None:
-        file_path = CSV_PATH
-    else:
-        path, file = os.path.split(CSV_PATH)
-        file_path = os.path.join(path, file_name)
-
-    df = get_df(file_path)
+    file_path = os.path.join(CSV_PATH, file_name)
+    df = get_csv_df(file_path)
 
     new_entry = pd.DataFrame({
         'Date': [date],
@@ -60,54 +81,63 @@ def add_csv_entry(date, exercise, set_order, weight, reps, file_name=None):
     new_df = pd.concat([df, new_entry], ignore_index=True)
     new_df.to_csv(file_path, index=False)
 
-    remove_invalid_entries()
+    remove_invalid_entries(file_name)
 
 
-def nano_edit_csv():
-    subprocess.run(["nano", CSV_PATH])
+def open_csv_notepad(file_name):
+    file_path = os.path.join(CSV_PATH, file_name)
+    subprocess.run(["notepad.exe", file_path])
 
 
-def open_csv_notepad(system=None):
-    subprocess.run(["notepad.exe", CSV_PATH])
-
-
-def remove_invalid_entries():
-    df = get_df()
+def remove_invalid_entries(file_name):
+    df = get_csv_df(file_name)
 
     new_df = df.drop_duplicates().dropna()
 
-    new_df.to_csv(CSV_PATH, index=False)
+    file_path = os.path.join(CSV_PATH, file_name)
+    new_df.to_csv(file_path, index=False)
 
 
+# format dates (set invalid dates to none, so those entries will be removed)
 def format_dates():
-    df = get_df()
+    for file_name in os.listdir(CSV_PATH):
+        df = get_csv_df(file_name)
 
-    for num, data in df.iterrows():
-        date = data['Date']
-        df.loc[num, 'Date'] = format_date(date)
+        for num, data in df.iterrows():
+            date = data['Date']
+            df.loc[num, 'Date'] = format_date(date)
 
-    df.to_csv(CSV_PATH, index=False)
+        file_path = os.path.join(CSV_PATH, file_name)
+        df.to_csv(file_path, index=False)
 
 
-def process_csv():
-    remove_invalid_entries()
+def process_csvs():
     format_dates()
-    remove_invalid_entries() # to remove duplicates after formating dates
+    for file_name in os.listdir(CSV_PATH):
+        remove_invalid_entries(file_name)
 
 
-def print_csv():
-    print(get_df())
+def print_csvs():
+    for file_name, df in zip(os.listdir(CSV_PATH), get_all_dfs()):
+        print(f"\n{file_name}:")
+        print(f"{df}\n")
 
 
-def replace_exercise_names(old_name, new_name):
-    df = get_df()
-    
+def replace_exercise_names(file_name, old_name, new_name):
+    df = get_csv_df(file_name)
+
     for num, data in df.iterrows():
-        name = data['Wxercise']
+        name = data['Exercise']
         if name == old_name:
             df.loc[num, 'Exercise'] = new_name
 
-    df.to_csv(CSV_PATH, index=False)
+    file_path = os.path.join(CSV_PATH, file_name)
+    df.to_csv(file_path, index=False)
+
+
+def replace_exercise_names_all(old_name, new_name):
+    for file_name in os.listdir(CSV_PATH):
+        replace_exercise_names(file_name, old_name, new_name)
 
 
 def one_rep_max_calc(weight, reps):
@@ -115,7 +145,7 @@ def one_rep_max_calc(weight, reps):
 
 def get_1RMs(exercise):
 
-    df = get_df()
+    df = get_unified_df()
 
     filtered_df = df[df['Exercise'] == exercise]
 
@@ -137,11 +167,11 @@ def get_1RMs(exercise):
     return dates, maxes
 
 
-def add_strong_csv_entries(file_path):
+def add_strong_csv_entries(strong_file_path, export_file_name):
 
-    df = get_df()
+    df = get_csv_df(export_file_name)
 
-    strong_df = pd.read_csv(file_path)
+    strong_df = pd.read_csv(strong_file_path)
 
     filter = strong_df['Set Order'] != 'Rest Timer'
 
@@ -165,10 +195,23 @@ def add_strong_csv_entries(file_path):
     })
 
     new_df = pd.concat([df, new_entries], ignore_index=True)
-    new_df.to_csv(CSV_PATH, index=False)
+    
+    file_path = os.path.join(CSV_PATH, export_file_name)
+    new_df.to_csv(file_path, index=False)
 
 
 def get_exercise_names():
-    df = get_df()
-    return list(df['Exercise'])
+    df = get_unified_df()
+    if df is not None and 'Exercise' in df.columns:
+        return list(df['Exercise'])
+    return []
 
+
+def delete_csv_file(file_name):
+    file_path = os.path.join(CSV_PATH, file_name)
+    os.remove(file_path)
+
+
+def delete_all_csv_files():
+    for file_name in os.listdir(CSV_PATH):
+        delete_csv_file(file_name)
