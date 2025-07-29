@@ -7,6 +7,10 @@ def open_line_plot(title, ylabel, dates, y_values):
 
     dates = pd.to_datetime(dates)
 
+    df = pd.DataFrame({'date': dates, 'y': y_values}).sort_values('date')
+    dates = df['date']
+    y_values = df['y']
+
     fig, ax = plt.subplots()
     ax.plot(dates, y_values, marker='o')
 
@@ -34,7 +38,12 @@ def open_line_plots(title, exercises, dates_list, y_values_list):
 
     def plot_index(idx):
         ax.clear()
-        ax.plot(dates_list[idx], y_values_list[idx], marker='o')
+
+        df = pd.DataFrame({'date': dates_list[idx], 'y': y_values_list[idx]}).sort_values('date')
+        dates = df['date']
+        y_values = df['y']
+
+        ax.plot(dates, y_values, marker='o')
         ax.xaxis.set_major_locator(mdates.AutoDateLocator())
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
         ax.set_xlabel("Date")

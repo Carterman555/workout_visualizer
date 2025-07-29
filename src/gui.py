@@ -86,7 +86,13 @@ class GUI:
 
             exercise_entry.bind("<FocusIn>", lambda e, ex=exercise: self.show_suggestions(ex.get()))
             exercise_entry.bind("<FocusOut>", lambda e: self.hide_suggestions())
-            exercise.trace_add('write', lambda *args, ex=exercise: self.update_suggestions(ex.get()))
+
+            def on_write_to_exercise(exercise_name):
+                widget = self.root.focus_get()
+                if widget and widget in self.exericise_entries:
+                    self.update_suggestions(exercise_name)
+
+            exercise.trace_add('write', lambda *args, ex=exercise: on_write_to_exercise(ex.get()))
 
             ttk.Label(gridframe, text="Weight", font=self.small_font).grid(column=2, row=top_row, padx=(20, 0), sticky=(E))
             ttk.Label(gridframe, text="Reps", font=self.small_font).grid(column=2, row=bottom_row, pady=(0, 20), sticky=(E))
@@ -134,7 +140,7 @@ class GUI:
     
 
     def check_num_entry(self, newval):
-        return re.match('^[0-9]*$', newval) is not None and len(newval) <= 5
+        return re.match('^[0-9.]*$', newval) is not None and len(newval) <= 5
 
 
     def check_add_enabled(self, *args):
