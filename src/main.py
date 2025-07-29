@@ -76,9 +76,6 @@ def main():
         sys.exit(1)
 
     if args.command == 'add':
-        if not file_check(args.file_name):
-            return
-        
         date = format_date(args.date)
         add_csv_entry(args.file_name, date, args.exercise, args.set_num, args.weight, args.reps)
     elif args.command == 'delete':
@@ -99,9 +96,6 @@ def main():
     elif args.command == 'process':
         process_csvs()
     elif args.command == 'gui':
-        if not file_check(args.file_name):
-            return
-        
         GUI(args.file_name)
     elif args.command == 'replace':
         if args.all:

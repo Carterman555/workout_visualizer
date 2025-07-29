@@ -55,7 +55,7 @@ class GUI:
         self.suggestions_listbox = Listbox(self.root, font=self.medium_font, listvariable=self.suggestionsvar)
         self.suggestions_listbox.bind(
             "<<ListboxSelect>>",
-            lambda e: self.set_suggestion(self.suggestions_listbox.curselection()[0])
+            lambda e: self.set_suggestion(self.suggestions_listbox.curselection())
         )
 
         # exercises grid
@@ -73,6 +73,14 @@ class GUI:
 
             exercise = StringVar()
             exercise_entry = ttk.Entry(gridframe, width=25, font=self.medium_font, textvariable=exercise)
+
+            def suggestion_set_shortcut(event):
+                if event.keysym.startswith("KP_") and event.keysym[3:].isdigit():
+                    num = event.keysym[3:]
+                    self.set_suggestion((int(num),))
+                    return "break"
+                
+            exercise_entry.bind("<KeyPress>", suggestion_set_shortcut)
             exercise_entry.grid(column=1, row=top_row, rowspan=2, pady=(0, 20), sticky=(W))
             self.exericise_entries.append(exercise_entry)
 
@@ -122,7 +130,6 @@ class GUI:
                 self.root.focus_set()
 
         self.root.bind('<Button-1>', on_click)
-
         self.root.mainloop()
     
 
@@ -163,14 +170,13 @@ class GUI:
 
                 set_order = int(i+1)
                 add_csv_entry(
+                    self.file_name,
                     self.date.get(),
                     entry["Exercise"].get(),
                     set_order,
                     entry["Weights"][i].get(),
-                    entry["RepAmounts"][i].get(),
-                    self.file_name
+                    entry["RepAmounts"][i].get()
                 )
-
             
         self.clear_entries()
 
@@ -207,7 +213,10 @@ class GUI:
 
     def update_suggestions(self, exercise):
         self.suggestions = self.trie.values(exercise)
-        self.suggestionsvar.set(self.suggestions)
+        self.suggestions = list(set(self.suggestions))
+
+        numbered_suggestions = [f"{i} {self.suggestions[i]}" for i in range(len(self.suggestions))]
+        self.suggestionsvar.set(numbered_suggestions)
         if len(self.suggestions) > 0:
             if not self.suggestions_listbox.winfo_ismapped():
                 self.try_place_suggestion_listbox()
@@ -219,7 +228,12 @@ class GUI:
         self.suggestions_listbox.place_forget()
 
 
-    def set_suggestion(self, suggestion_index):
+    def set_suggestion(self, suggestion_index_tuple):
+
+        if len(suggestion_index_tuple) == 0:
+            return
+        
+        suggestion_index = suggestion_index_tuple[0]
 
         focused_widget = self.root.focus_get()
         stringvar = None

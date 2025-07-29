@@ -41,12 +41,15 @@ def get_all_dfs():
 
 def get_unified_df():
 
-    unified_df = pd.DataFrame()
     dfs = get_all_dfs()
-    for df in dfs:
-        unified_df = pd.concat([unified_df, df], ignore_index=True)
 
-    return unified_df
+    non_empty_dfs = []
+    for df in dfs:
+        if not df.empty:
+            non_empty_dfs.append(df.dropna())
+
+    unified_df = pd.concat(non_empty_dfs, ignore_index=True)
+    return unified_df.drop_duplicates()
         
 
 def create_new_csv(file_name):
@@ -67,8 +70,7 @@ def create_new_csv(file_name):
 
 def add_csv_entry(file_name, date, exercise, set_order, weight, reps):
 
-    file_path = os.path.join(CSV_PATH, file_name)
-    df = get_csv_df(file_path)
+    df = get_csv_df(file_name)
 
     new_entry = pd.DataFrame({
         'Date': [date],
@@ -79,6 +81,8 @@ def add_csv_entry(file_name, date, exercise, set_order, weight, reps):
     })
 
     new_df = pd.concat([df, new_entry], ignore_index=True)
+
+    file_path = os.path.join(CSV_PATH, file_name)
     new_df.to_csv(file_path, index=False)
 
     remove_invalid_entries(file_name)
