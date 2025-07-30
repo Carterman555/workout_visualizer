@@ -423,7 +423,6 @@ dependencies = [
     { name = "argparse" },
     { name = "datetime" },
     { name = "matplotlib" },
-    { name = "numpy" },
     { name = "pandas" },
     { name = "pytrie" },
 ]
@@ -433,7 +432,6 @@ requires-dist = [
     { name = "argparse", specifier = ">=1.4.0" },
     { name = "datetime", specifier = ">=5.5" },
     { name = "matplotlib", specifier = "==3.10.0" },
-    { name = "numpy", specifier = ">=2.3.1" },
     { name = "pandas", specifier = ">=2.3.1" },
     { name = "pytrie", specifier = ">=0.4.0" },
 ]

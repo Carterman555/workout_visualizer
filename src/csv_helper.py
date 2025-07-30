@@ -1,11 +1,16 @@
 import pandas as pd
 import os
 import subprocess
-import traceback
 
 from helper import format_date
 
 CSV_PATH = "data/processed"
+
+
+def create_csv_path():
+    if not os.path.exists(CSV_PATH):
+        os.makedirs(CSV_PATH)
+
 
 def csv_exists(file_name):
     file_path = os.path.join(CSV_PATH, file_name)
@@ -26,7 +31,6 @@ def get_csv_df(file_name):
             print(f"Error trying to read csv {e}. Edit csv to correct format.")
     else:
         df = create_new_csv(file_name)
-        print("Created new file")
 
     return df
 
@@ -73,7 +77,7 @@ def add_csv_entry(file_name, date, exercise, set_order, weight, reps):
     df = get_csv_df(file_name)
 
     new_entry = pd.DataFrame({
-        'Date': [date],
+        'Date': [format_date(date)],
         'Exercise': [exercise],
         'Set Order': [set_order],
         'Weight': [weight],
@@ -89,6 +93,10 @@ def add_csv_entry(file_name, date, exercise, set_order, weight, reps):
 
 
 def open_csv_notepad(file_name):
+
+    if not csv_exists(file_name):
+        create_new_csv(file_name)
+
     file_path = os.path.join(CSV_PATH, file_name)
     subprocess.run(["notepad.exe", file_path])
 
@@ -126,14 +134,20 @@ def print_csvs():
         print(f"\n{file_name}:")
         print(f"{df}\n")
 
+def list_csvs():
+    print(', '.join(os.listdir(CSV_PATH)))
 
 def replace_exercise_names(file_name, old_name, new_name):
     df = get_csv_df(file_name)
 
+    count = 0
     for num, data in df.iterrows():
         name = data['Exercise']
         if name == old_name:
             df.loc[num, 'Exercise'] = new_name
+            count += 1
+
+    print(f"{count} instances replaced in {file_name}")
 
     file_path = os.path.join(CSV_PATH, file_name)
     df.to_csv(file_path, index=False)

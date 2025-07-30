@@ -39,5 +39,3 @@ def format_date(date_str):
     except Exception as e:
         print(f"Error while parsing date: {e}")
         return ""
-
-

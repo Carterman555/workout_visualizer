@@ -3,7 +3,6 @@ import sys
 from datetime import datetime
 
 from gui import GUI
-from helper import *
 from csv_helper import *
 from graph_helper import *
 
@@ -21,12 +20,15 @@ def file_check(file_name):
 
 
 def main():
+
+    create_csv_path()
+
     parser = argparse.ArgumentParser(description='Workout Visualizer')
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
     
     # add
     add_parser = subparsers.add_parser('add', help='Add an exercise entry which represents one set')
-    add_parser.add_argument('file_name', help='name of file to add entry to')
+    add_parser.add_argument('-f', '--file_name', default="default.csv", help='name of file to add entry to')
     add_parser.add_argument('date', help='date of exercise')
     add_parser.add_argument('exercise', help='exercise name')
     add_parser.add_argument('set_num', type=int, help='order of set')
@@ -40,10 +42,13 @@ def main():
 
     # open
     open_parser = subparsers.add_parser('open', help='Open file in notepad')
-    open_parser.add_argument('file_name', default="default.csv", help='name of file to open')
+    open_parser.add_argument('-f', '--file_name', default="default.csv", help='name of file to open')
 
     # print
     subparsers.add_parser('print', help='Prints workout data')
+
+    # list
+    subparsers.add_parser('list', help='List out all csv files')
 
     # process
     subparsers.add_parser('process', help='Removes invalid entries and formats dates')
@@ -76,8 +81,7 @@ def main():
         sys.exit(1)
 
     if args.command == 'add':
-        date = format_date(args.date)
-        add_csv_entry(args.file_name, date, args.exercise, args.set_num, args.weight, args.reps)
+        add_csv_entry(args.file_name, args.date, args.exercise, args.set_num, args.weight, args.reps)
     elif args.command == 'delete':
         if args.all:
             delete_all_csv_files()
@@ -87,15 +91,22 @@ def main():
             
             delete_csv_file(args.file_name)
     elif args.command == 'open':
-        if not file_check(args.file_name):
+        if not args.file_name.endswith('.csv'):
+            print(f"Error: file is not csv: {args.file_name}")
             return
-        
+
         open_csv_notepad(args.file_name)
     elif args.command == 'print':
         print_csvs()
+    elif args.command == 'list':
+        list_csvs()
     elif args.command == 'process':
         process_csvs()
     elif args.command == 'gui':
+        if not args.file_name.endswith('.csv'):
+            print(f"Error: file is not csv: {args.file_name}")
+            return
+
         GUI(args.file_name)
     elif args.command == 'replace':
         if args.all:
