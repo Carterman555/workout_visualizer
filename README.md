@@ -5,13 +5,15 @@ Workout Visualizer is an app to track, store, and visualize the progress of your
 ## Getting Started
 ---
 ### Prerequisites:
-- Knowledge of basic CLI usage
 - Python 3.6+
 - Tkinter
 	 - When installing Python check "tcl/tk and IDLE" under optional features
+- Git
 
 ### Setup:
 
+1. [Install uv](https://docs.astral.sh/uv/getting-started/installation/)
+2. Clone Repository
 ```
 git clone https://github.com/Carterman555/workout_visualizer.git
 cd workout_visualizer
