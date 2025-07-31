@@ -11,14 +11,11 @@ Workout Visualizer is an app to track, store, and visualize the progress of your
 	 - When installing Python check "tcl/tk and IDLE" under optional features
 
 ### Setup:
-1. Install uv: `curl -LsSf https://astral.sh/uv/install.sh | sh`
-2. Initialize the correct virtual environment: `source .venv/bin/activate`
-3. Add dependencies
-	- uv add argparse
-	- uv add datetime
-	- uv add matplotlib
-	- uv add pandas
-	- uv add pytrie
+
+```
+git clone https://github.com/Carterman555/workout_visualizer.git
+cd workout_visualizer
+```
 
 ### Commands:
 The default file name is default.csv.
