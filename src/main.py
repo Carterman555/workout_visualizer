@@ -50,6 +50,9 @@ def main():
     # list
     subparsers.add_parser('list', help='List out all csv files')
 
+    # exercises
+    subparsers.add_parser('exercises', help='List out all exercise names along with the amount of sets tracked')
+
     # process
     subparsers.add_parser('process', help='Removes invalid entries and formats dates')
 
@@ -100,6 +103,8 @@ def main():
         print_csvs()
     elif args.command == 'list':
         list_csvs()
+    elif args.command == 'exercises':
+        list_exercises()
     elif args.command == 'process':
         process_csvs()
     elif args.command == 'gui':
@@ -127,6 +132,10 @@ def main():
                 all_maxes.append(maxes)
             open_line_plots(f"1RM", exercises, all_dates, all_maxes)
         else:
+            if not exercise_exists(args.exercise):
+                print(f"Error: {args.exercise} can not be found in data.")
+                return
+
             dates, maxes = get_1RMs(args.exercise)
             open_line_plot(f"{args.exercise} 1RM", "1RM", dates, maxes)
     elif args.command == 'strong':

@@ -52,6 +52,11 @@ List out all csv files
 
 `./run.sh list`
 
+##### `exercises`
+List out all exercise names along with the amount of sets tracked
+
+`./run.sh exercises`
+
 ##### `process`
 Removes invalid entries and formats dates
 

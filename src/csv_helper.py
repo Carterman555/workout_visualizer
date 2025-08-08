@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import os
 import subprocess
@@ -115,9 +116,7 @@ def format_dates():
     for file_name in os.listdir(CSV_PATH):
         df = get_csv_df(file_name)
 
-        for num, data in df.iterrows():
-            date = data['Date']
-            df.loc[num, 'Date'] = format_date(date)
+        df['Date'] = df['Date'].apply(format_date)
 
         file_path = os.path.join(CSV_PATH, file_name)
         df.to_csv(file_path, index=False)
@@ -136,6 +135,10 @@ def print_csvs():
 
 def list_csvs():
     print(', '.join(os.listdir(CSV_PATH)))
+
+def list_exercises():
+    df = get_unified_df()
+    print(df['Exercise'].value_counts())
 
 def replace_exercise_names(file_name, old_name, new_name):
     df = get_csv_df(file_name)
@@ -157,32 +160,22 @@ def replace_exercise_names_all(old_name, new_name):
     for file_name in os.listdir(CSV_PATH):
         replace_exercise_names(file_name, old_name, new_name)
 
-
-def one_rep_max_calc(weight, reps):
-    return weight * (1 + 0.03 * reps)
+def exercise_exists(exercise):
+    df = get_unified_df()
+    return exercise in df['Exercise'].unique()
 
 def get_1RMs(exercise):
 
     df = get_unified_df()
 
-    filtered_df = df[df['Exercise'] == exercise]
+    filtered_df = df[df['Exercise'] == exercise].copy()
+
+    filtered_df['1RM'] = filtered_df['Weight'] * (1 + 0.03 * filtered_df['Reps'])
+    filtered_df.sort_values(by='1RM', inplace=True, ascending=False)
 
     filtered_df = filtered_df.drop_duplicates(subset='Date', keep='first')
 
-    dates = list(filtered_df['Date'])
-    weights = list(filtered_df['Weight'])
-    rep_amounts = list(filtered_df['Reps'])
-
-    if len(dates) != len(weights) or len(weights) != len(rep_amounts):
-        print(f"Error: Mismatched lengths - \ndate: {len(dates)}, weights: {len(weights)}, reps: {len(rep_amounts)}")
-        return None, None
-
-    maxes = []
-    for weight, reps in zip(weights, rep_amounts):
-        max = one_rep_max_calc(weight, reps)
-        maxes.append(max)
-
-    return dates, maxes
+    return filtered_df['Date'].tolist(), filtered_df['1RM'].tolist()
 
 
 def add_strong_csv_entries(strong_file_path, export_file_name):
@@ -221,7 +214,7 @@ def add_strong_csv_entries(strong_file_path, export_file_name):
 def get_exercise_names():
     df = get_unified_df()
     if df is not None and 'Exercise' in df.columns:
-        return set(df['Exercise'])
+        return df['Exercise'].value_counts().index.tolist()
     return {}
 
 
